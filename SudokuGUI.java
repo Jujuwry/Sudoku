@@ -1,12 +1,12 @@
 package GUI;
 
 import javax.swing.*;
-import javax.swing.border.Border;
+
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+
+
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.util.Random;
 
@@ -42,8 +42,7 @@ public class SudokuGUI extends JFrame {
                 textField.setHorizontalAlignment(JTextField.CENTER);
                 textFields[i][j] = textField;
 
-                int finalRow = i;
-                int finalCol = j;
+               
 
                 // Adds a key listener to restrict input to digits only
                 textField.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -55,12 +54,19 @@ public class SudokuGUI extends JFrame {
                     }
                 });
 
-                // Adds a mouse listener to show a message if a cell is clicked and empty
-                textField.addMouseListener(new MouseAdapter() {
+                // Adds a focus listener to check if the value entered is inside the region
+                textField.addFocusListener(new FocusAdapter() {
                     @Override
-                    public void mouseClicked(MouseEvent e) {
-                        if (textField.getText().isEmpty()) {
-                            JOptionPane.showMessageDialog(SudokuGUI.this, "Enter a value between 1-9");
+                    public void focusLost(FocusEvent e) {
+                        String input = textField.getText();
+                        if (!input.isEmpty()) {
+                         
+                                int value = Integer.parseInt(input);
+                                if (value > 9 || value < 1) {
+                                    textField.setText("");
+                                    JOptionPane.showMessageDialog(SudokuGUI.this, "Enter a value between 1-9");
+                                }
+                        
                         }
                     }
                 });
@@ -79,32 +85,53 @@ public class SudokuGUI extends JFrame {
 
     // Adds borders and styling to the grid cells
     private void addBordersToGrid() {
-        Border defaultBorder = BorderFactory.createLineBorder(Color.BLACK, 1);
-        Border thickerBorder = BorderFactory.createLineBorder(Color.BLACK, 2);
-        Border compoundBorder;
-
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
                 JTextField textField = textFields[i][j];
                 int subgridRow = i / 3;
                 int subgridCol = j / 3;
-
+    
                 // Sets background color for subgrid cells
                 if (subgridRow % 2 == 0 && subgridCol % 2 == 0) {
                     textField.setBackground(new Color(220, 220, 220));
                 } else if (subgridRow % 2 == 1 && subgridCol % 2 == 1) {
                     textField.setBackground(new Color(220, 220, 220));
                 }
-
-                // Adds borders to all cells
-                textField.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-
+    
+                // Calculate border thickness for individual cells
+                int top = 1;
+                int left = 1;
+                int bottom = 1;
+                int right = 1;
+    
+                // Check if the current cell is on the border of a subgrid
+                if (i % 3 == 0) top = 2;
+                if (j % 3 == 0) left = 2;
+                if (i % 3 == 2 || i == 8) bottom = 2;
+                if (j % 3 == 2 || j == 8) right = 2;
+    
+                // Set border color and thickness
+                textField.setBorder(BorderFactory.createMatteBorder(top, left, bottom, right, Color.BLACK));
+    
                 textField.setFont(new Font("Arial", Font.BOLD, 20));
                 textField.setPreferredSize(new Dimension(40, 40));
                 textField.setHorizontalAlignment(JTextField.CENTER);
+
+         
             }
         }
     }
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+
 
     // Generates random numbers for initial Sudoku grid values
     private void generateRandomNumbers() {
